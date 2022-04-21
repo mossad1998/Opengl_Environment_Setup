@@ -1,0 +1,2 @@
+﻿LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+  Shader_Build.vcxproj -> F:\Game_Design\Shader_Build\x64\Debug\Shader_Build.exe
