@@ -1,10 +1,18 @@
 #include "GL/glew.h"
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <chrono>
+#include <ctime>
+#include <ratio>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include "Time.h"
+#include <thread>
+#include "Accumulator.h"
+#include "Time_Stamp.h"
 
+static float m_LastFrameTime = 1;
 
 struct ShaderProgramSource {
 
@@ -87,6 +95,33 @@ static int CreateShader(const std::string& vertexShader, const std::string& frag
     return program;
 }
 
+void update(int location,Time_Stamp ts,float time) {
+
+
+    static float r = 0.0f;
+    static float increment = 0.0005f;
+    m_LastFrameTime = time;
+
+    std::cout << 1/ts.GetSeconds() << std::endl;
+    /* Render here */
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    //glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glUniform4f(location, r, 0.3f, 0.8f, 1.0f);
+
+
+    if (r > 1.0f) {
+        increment = -0.0005f;
+    }
+    else if (r < 0.0f) {
+        increment = 0.0005f;
+    }
+
+    r = r + increment;
+
+}
 
 int main(void)
 {
@@ -141,14 +176,24 @@ int main(void)
     unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
     glUseProgram(shader);
 
+    int location = glGetUniformLocation(shader, "u_color");
+
+
+
+
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
-        /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-        //glDrawArrays(GL_TRIANGLES, 0, 6);
+        float time = (float)glfwGetTime();
+        Time_Stamp timestep = time -  m_LastFrameTime;
+        m_LastFrameTime = time;
+
+        //m_LastFrameTime = time;
+
+
+        update(location, timestep, time);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
