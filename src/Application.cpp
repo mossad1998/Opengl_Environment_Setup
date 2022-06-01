@@ -9,8 +9,11 @@
 #include <string>
 #include "Time.h"
 #include <thread>
-#include "Accumulator.h"
 #include "Time_Stamp.h"
+#include "gtc/type_ptr.hpp"
+
+
+
 
 static float m_LastFrameTime = 1;
 
@@ -95,11 +98,15 @@ static int CreateShader(const std::string& vertexShader, const std::string& frag
     return program;
 }
 
-void update(int location,Time_Stamp ts,float time) {
+void update(int location,int mat4_location,Time_Stamp ts,float time) {
 
 
     static float r = 0.0f;
     static float increment = 0.0005f;
+
+    static float x = 0.0f;
+    static float x_increment = 0.0005f;
+
     m_LastFrameTime = time;
 
     std::cout << 1/ts.GetSeconds() << std::endl;
@@ -110,6 +117,8 @@ void update(int location,Time_Stamp ts,float time) {
     //glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glUniform4f(location, r, 0.3f, 0.8f, 1.0f);
+    glUniform4f(mat4_location, x, 0.3f, 0.0f, 1.0f);
+
 
 
     if (r > 1.0f) {
@@ -120,6 +129,15 @@ void update(int location,Time_Stamp ts,float time) {
     }
 
     r = r + increment;
+
+    if (x > 1.0f) {
+        x_increment = -0.0005f;
+    }
+    else if (x < 0.0f) {
+        x_increment = 0.0005f;
+    }
+
+    x = x + x_increment;
 
 }
 
@@ -177,7 +195,7 @@ int main(void)
     glUseProgram(shader);
 
     int location = glGetUniformLocation(shader, "u_color");
-
+    int mat4_location = glGetUniformLocation(shader, "u_transformation_matrix");
 
 
 
@@ -193,7 +211,7 @@ int main(void)
         //m_LastFrameTime = time;
 
 
-        update(location, timestep, time);
+        update(location, mat4_location, timestep, time);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
