@@ -9,35 +9,13 @@
 #include <string>
 #include "Time.h"
 #include <thread>
-#include "Accumulator.h"
 #include "Time_Stamp.h"
-#include <glm.hpp>
+#include "gtc/type_ptr.hpp"
+
+
+
 
 static float m_LastFrameTime = 1;
-
-
-
-static glm::vec2 control(GLFWwindow* window_, glm::vec2 postion) {
-
-    static glm::vec2 currentLocation = glm::vec2(0.0f,0.0f);
-
-    if (glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS) {
-        currentLocation = postion + glm::vec2(0, 0.001);
-    }
-    if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS) {
-        currentLocation = postion + glm::vec2(0, -0.001);
-    }
-    if (glfwGetKey(window_, GLFW_KEY_D) == GLFW_PRESS) {
-        currentLocation = postion + glm::vec2(0.001, 0);
-    }
-    if ((glfwGetKey(window_, GLFW_KEY_A) == GLFW_PRESS)) {
-        currentLocation = postion + glm::vec2(-0.001, 0);
-    }
-    if (glfwGetKey(window_, GLFW_KEY_Q) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window_, true);
-    }
-    return currentLocation;
-}
 
 struct ShaderProgramSource {
 
@@ -81,8 +59,6 @@ static ShaderProgramSource readShader(const std::string& filepath) {
 }
 
 
-
-
 static unsigned int CompileShader(unsigned int type, const std::string& source) {
 
     unsigned int id = glCreateShader(type);
@@ -122,25 +98,28 @@ static int CreateShader(const std::string& vertexShader, const std::string& frag
     return program;
 }
 
-void update(int c_location,int p_location,Time_Stamp ts,float time, GLFWwindow* window) {
+void update(int location,int mat4_location,Time_Stamp ts,float time) {
 
-    static glm::vec2 postion = glm::vec2(0.0f, 0.0f);
-
-    postion = control(window,postion);
 
     static float r = 0.0f;
     static float increment = 0.0005f;
 
+    static float x = 0.0f;
+    static float x_increment = 0.0005f;
+
     m_LastFrameTime = time;
-    std::cout << ts.GetSeconds() << std::endl;
+
+    std::cout << 1/ts.GetSeconds() << std::endl;
     /* Render here */
     glClear(GL_COLOR_BUFFER_BIT);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
     //glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    glUniform4f(c_location, r, 0.3f, 0.8f, 1.0f);
-    glUniform4f(p_location, postion.x, postion.y, 0.0f, 1.0f);
+    glUniform4f(location, r, 0.3f, 0.8f, 1.0f);
+    glUniform4f(mat4_location, x, 0.3f, 0.0f, 1.0f);
+
+
 
     if (r > 1.0f) {
         increment = -0.0005f;
@@ -150,6 +129,15 @@ void update(int c_location,int p_location,Time_Stamp ts,float time, GLFWwindow* 
     }
 
     r = r + increment;
+
+    if (x > 1.0f) {
+        x_increment = -0.0005f;
+    }
+    else if (x < 0.0f) {
+        x_increment = 0.0005f;
+    }
+
+    x = x + x_increment;
 
 }
 
@@ -183,21 +171,9 @@ int main(void)
         -0.5f,  0.5f,       //3
     };
 
-    float positions_1[] = {
-    -0.5f, -0.5f,       //0
-     0.5f, -0.5f,       //1
-     0.5f,  0.5f,       //2
-    -0.5f,  0.5f,       //3
-    };
-
     unsigned int indices[] = {
         0,1,2,              //first triangle
         2,3,0               //second triangle
-    };
-
-    unsigned int indices_1[] = {
-    0,1,2,              //first triangle
-    2,3,0               //second triangle
     };
 
     unsigned int buffer;
@@ -218,9 +194,11 @@ int main(void)
     unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
     glUseProgram(shader);
 
-    int c_location = glGetUniformLocation(shader, "u_color");
-    int p_location = glGetUniformLocation(shader, "u_position");
-    
+    int location = glGetUniformLocation(shader, "u_color");
+    int mat4_location = glGetUniformLocation(shader, "u_transformation_matrix");
+
+
+
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -233,7 +211,7 @@ int main(void)
         //m_LastFrameTime = time;
 
 
-        update(c_location,p_location, timestep, time,window);
+        update(location, mat4_location, timestep, time);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
