@@ -145,20 +145,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Accumulator.cpp" />
     <ClCompile Include="src\Application.cpp" />
-    <ClCompile Include="src\Frame_Timer.cpp" />
-    <ClCompile Include="src\Game_Loop.cpp" />
-    <ClCompile Include="src\Time.cpp" />
+    <ClCompile Include="src\Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\basic.shader" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Accumulator.h" />
-    <ClInclude Include="src\Frame_Timer.h" />
-    <ClInclude Include="src\Game_Loop.h" />
-    <ClInclude Include="src\Time.h" />
+    <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Time_Stamp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

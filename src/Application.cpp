@@ -9,9 +9,9 @@
 #include <string>
 #include "Time.h"
 #include <thread>
-#include "Accumulator.h"
 #include "Time_Stamp.h"
 #include <glm.hpp>
+#include "Shader.h"
 
 static float m_LastFrameTime = 1;
 
@@ -39,46 +39,8 @@ static glm::vec2 control(GLFWwindow* window_, glm::vec2 postion) {
     return currentLocation;
 }
 
-struct ShaderProgramSource {
 
-    std::string VertexSource;
-    std::string FragmentSource;
-};
 
-static ShaderProgramSource readShader(const std::string& filepath) {
-
-    enum class ShaderType {
-        NONE = -1, VERTEX = 0, FRAGMENT = 1
-
-    };
-
-    std::ifstream stream(filepath);
-    std::stringstream ss[2];
-    std::string line;
-
-    ShaderType type = ShaderType::NONE;
-
-    while (getline(stream, line)) {
-        if (line.find("#shader") != std::string::npos) {
-
-            if (line.find("vertex") != std::string::npos)
-            {
-                type = ShaderType::VERTEX;
-            }
-            else if (line.find("fragment") != std::string::npos)
-            {
-                type = ShaderType::FRAGMENT;
-            }
-
-        }
-        else {
-            ss[(int)type] << line << '\n';
-        }
-
-    }
-
-    return { ss[0].str(), ss[1].str() };
-}
 
 
 
@@ -136,11 +98,19 @@ void update(int c_location,int p_location,Time_Stamp ts,float time, GLFWwindow* 
     /* Render here */
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    {
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        glUniform4f(p_location, 0.5f, 0.5f, 0.0f, 1.0f);
+    }
+
+    {
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        glUniform4f(p_location, postion.x, postion.y, 0.0f, 1.0f);
+    }
+
     //glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glUniform4f(c_location, r, 0.3f, 0.8f, 1.0f);
-    glUniform4f(p_location, postion.x, postion.y, 0.0f, 1.0f);
 
     if (r > 1.0f) {
         increment = -0.0005f;
@@ -213,7 +183,13 @@ int main(void)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * 2 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
    
-    ShaderProgramSource source = readShader("Resources/Shaders/basic.shader");
+    shader sh;
+    sh.setShaderPath("Resources/Shaders/basic.shader");
+    ShaderProgramSource source = sh.shaderRead();
+
+    //ShaderProgramSource source = readShader("Resources/Shaders/basic.shader");
+
+
 
     unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
     glUseProgram(shader);
