@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>F:\Game_Design\Opengl_Environment_Setup-Opengl_Simple_Shader_V4\Opengl_Environment_Setup-Opengl_Simple_Shader_V4\x64\Debug\Shader_Build.exe</FullPath>
+      <FullPath>F:\Opengl_Environment_Setup\x64\Debug\Shader_Build.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

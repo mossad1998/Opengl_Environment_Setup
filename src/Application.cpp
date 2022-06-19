@@ -10,53 +10,39 @@
 #include "Time.h"
 #include <thread>
 #include "Time_Stamp.h"
-#include "gtc/type_ptr.hpp"
-
-
-
+#include <glm.hpp>
+#include "Shader.h"
 
 static float m_LastFrameTime = 1;
 
-struct ShaderProgramSource {
 
-    std::string VertexSource;
-    std::string FragmentSource;
-};
 
-static ShaderProgramSource readShader(const std::string& filepath) {
+static glm::vec2 control(GLFWwindow* window_, glm::vec2 postion) {
 
-    enum class ShaderType {
-        NONE = -1, VERTEX = 0, FRAGMENT = 1
+    static glm::vec2 currentLocation = glm::vec2(0.0f,0.0f);
 
-    };
-
-    std::ifstream stream(filepath);
-    std::stringstream ss[2];
-    std::string line;
-
-    ShaderType type = ShaderType::NONE;
-
-    while (getline(stream, line)) {
-        if (line.find("#shader") != std::string::npos) {
-
-            if (line.find("vertex") != std::string::npos)
-            {
-                type = ShaderType::VERTEX;
-            }
-            else if (line.find("fragment") != std::string::npos)
-            {
-                type = ShaderType::FRAGMENT;
-            }
-
-        }
-        else {
-            ss[(int)type] << line << '\n';
-        }
-
+    if (glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS) {
+        currentLocation = postion + glm::vec2(0, 0.001);
     }
-
-    return { ss[0].str(), ss[1].str() };
+    if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS) {
+        currentLocation = postion + glm::vec2(0, -0.001);
+    }
+    if (glfwGetKey(window_, GLFW_KEY_D) == GLFW_PRESS) {
+        currentLocation = postion + glm::vec2(0.001, 0);
+    }
+    if ((glfwGetKey(window_, GLFW_KEY_A) == GLFW_PRESS)) {
+        currentLocation = postion + glm::vec2(-0.001, 0);
+    }
+    if (glfwGetKey(window_, GLFW_KEY_Q) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window_, true);
+    }
+    return currentLocation;
 }
+
+
+
+
+
 
 
 static unsigned int CompileShader(unsigned int type, const std::string& source) {
@@ -98,28 +84,33 @@ static int CreateShader(const std::string& vertexShader, const std::string& frag
     return program;
 }
 
-void update(int location,int mat4_location,Time_Stamp ts,float time) {
+void update(int c_location,int p_location,Time_Stamp ts,float time, GLFWwindow* window) {
 
+    static glm::vec2 postion = glm::vec2(0.0f, 0.0f);
+
+    postion = control(window,postion);
 
     static float r = 0.0f;
     static float increment = 0.0005f;
 
-    static float x = 0.0f;
-    static float x_increment = 0.0005f;
-
     m_LastFrameTime = time;
-
-    std::cout << 1/ts.GetSeconds() << std::endl;
+    std::cout << ts.GetSeconds() << std::endl;
     /* Render here */
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    {
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        glUniform4f(p_location, 0.5f, 0.5f, 0.0f, 1.0f);
+    }
+
+    {
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        glUniform4f(p_location, postion.x, postion.y, 0.0f, 1.0f);
+    }
+
     //glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    glUniform4f(location, r, 0.3f, 0.8f, 1.0f);
-    glUniform4f(mat4_location, x, 0.3f, 0.0f, 1.0f);
-
-
+    glUniform4f(c_location, r, 0.3f, 0.8f, 1.0f);
 
     if (r > 1.0f) {
         increment = -0.0005f;
@@ -129,15 +120,6 @@ void update(int location,int mat4_location,Time_Stamp ts,float time) {
     }
 
     r = r + increment;
-
-    if (x > 1.0f) {
-        x_increment = -0.0005f;
-    }
-    else if (x < 0.0f) {
-        x_increment = 0.0005f;
-    }
-
-    x = x + x_increment;
 
 }
 
@@ -171,9 +153,21 @@ int main(void)
         -0.5f,  0.5f,       //3
     };
 
+    float positions_1[] = {
+    -0.5f, -0.5f,       //0
+     0.5f, -0.5f,       //1
+     0.5f,  0.5f,       //2
+    -0.5f,  0.5f,       //3
+    };
+
     unsigned int indices[] = {
         0,1,2,              //first triangle
         2,3,0               //second triangle
+    };
+
+    unsigned int indices_1[] = {
+    0,1,2,              //first triangle
+    2,3,0               //second triangle
     };
 
     unsigned int buffer;
@@ -189,16 +183,20 @@ int main(void)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * 2 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
    
-    ShaderProgramSource source = readShader("Resources/Shaders/basic.shader");
+    shader sh;
+    sh.setShaderPath("Resources/Shaders/basic.shader");
+    ShaderProgramSource source = sh.shaderRead();
+
+    //ShaderProgramSource source = readShader("Resources/Shaders/basic.shader");
+
+
 
     unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
     glUseProgram(shader);
 
-    int location = glGetUniformLocation(shader, "u_color");
-    int mat4_location = glGetUniformLocation(shader, "u_transformation_matrix");
-
-
-
+    int c_location = glGetUniformLocation(shader, "u_color");
+    int p_location = glGetUniformLocation(shader, "u_position");
+    
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -211,7 +209,7 @@ int main(void)
         //m_LastFrameTime = time;
 
 
-        update(location, mat4_location, timestep, time);
+        update(c_location,p_location, timestep, time,window);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
