@@ -1,1 +1,6 @@
-﻿  Shader_Build.vcxproj -> F:\Opengl_Environment_Setup\x64\Debug\Shader_Build.exe
+﻿  Game.cpp
+C:\Users\mmoss\Desktop\Shader_Build\src\Game.cpp(37): warning C4715: 'game::createWindow': not all control paths return a value
+glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'C:\Users\mmoss\Desktop\Shader_Build\x64\Debug\vc120.pdb'; linking object as if no debug info
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+  Shader_Build.vcxproj -> C:\Users\mmoss\Desktop\Shader_Build\x64\Debug\Shader_Build.exe
