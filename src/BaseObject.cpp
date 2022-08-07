@@ -28,7 +28,8 @@ void Baseobject::containerWork()
 		incdicesContainer = new unsigned int[iT];
 
 		for (int i = 0; i < pT; i++) {
-			positionContainer[i] = positionsTriangle[i];
+			//scale is here
+			positionContainer[i] =0.5 * positionsTriangle[i];
 		}
 
 		for (int y = 0; y < iT; y++) {
