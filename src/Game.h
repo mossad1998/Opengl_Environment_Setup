@@ -7,6 +7,7 @@
 #include "Shader.h"
 #include"Time_Stamp.h"
 #include "GameObject.h"
+#include "Trajectory.h"
 
 
 class game {
@@ -34,7 +35,8 @@ class game {
 		int createWindow();
 
 		//Game base object
-		Baseobject* mainObject;
+		Baseobject* mainObject_1;
+		Baseobject* mainObject_2;
 		void bindBuffers();
 
 		//Game shader
@@ -50,5 +52,13 @@ class game {
 		gameobject* kfc;
 		void objectsInitialization();
 
+		//Trajectory
+		trajectory traject;
+
+		void output(float x, float y, float r, float g, float b, const char* string);
+
+		void fight();
+
+		void gameMenu();
 
 };
